@@ -6,57 +6,49 @@ from pathlib import Path
 
 class Utility:
 
-    engines = None
+    def __init__(self):
+        """Provides Engines without multiple calls to OpenAI"""
+        self.api_key = self.set_openai_key()
+        self.engines = self.set_openai_engines()
 
-    @staticmethod
-    def set_openai_key(key: str = None):
+    def set_openai_key(self, key: str = None):
         """Connects API Key With OpenAi"""
         env_path = Path('.') / '.env'
         load_dotenv(dotenv_path=env_path)
         openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    @staticmethod
-    def set_openai_engines():
+    def set_openai_engines(self):
         """Updates available Engines w.r.t your API key's permissions."""
-        Utility.engines = dict(
-            enumerate(eng["id"] for eng in openai.Engine.list()["data"]))
+        return dict(
+            enumerate(eng["id"] for eng in openai.Engine.list()["data"])
+        )
 
-    @staticmethod
-    def get_openai_engines():
-        """
-        Checks to see if Utility.engines is populated.
-        Else deletes class attribute & requests available Engines from OpenAI.
-        Returns gathered Engines
-        """
-        if not Utility.engines:
-            Utility.set_openai_engines()
-        return Utility.engines
+    def get_openai_engines(self):
+        """Returns available Engines"""
+        return self.engines
 
-    @staticmethod
-    def pick_engine():
+    def pick_engine(self):
         """Allows the User to pick an Engine"""
-        [print(str(idx)+":", Utility.engines[idx]) for idx in Utility.engines]
-        return Utility.engines[
+        [print(str(idx)+":", self.engines[idx]) for idx in self.engines]
+        return self.engines[
             int(input("Enter the number for your desired Engine:\n>>> "))]
 
-    @staticmethod
-    def prepare_system():
+    def prepare_system(self):
         print("Preparing OpenAI Environment")
-        Utility.set_openai_key()
-        Utility.set_openai_engines()
+        self.set_openai_key()
+        self.get_openai_engines()
         print("Engines found")
 
 
 def test_all():
-    Utility.set_openai_key()
-    print('Utility.get_openai_engines(): ', Utility.get_openai_engines())
-    print('Utility.pick_engine(): ', Utility.pick_engine())
-    print(Utility.get_openai_engines())
+    test_util = Utility()
+    print(test_util.get_openai_engines())
+    print(test_util.pick_engine())
+    
 
 
 def main():
     test_all()
-    Utility.prepare_system()
 
 
 if __name__ == '__main__':
